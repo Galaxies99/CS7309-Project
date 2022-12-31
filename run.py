@@ -2,6 +2,7 @@ import yaml
 import argparse
 from easydict import EasyDict as edict
 from scripts.atari.train_dqn import Trainer as Trainer_DQN
+from scripts.atari.train_double_dqn import Trainer as Trainer_DoubleDQN
 
 
 if __name__ == '__main__':
@@ -22,6 +23,8 @@ if __name__ == '__main__':
 
     if args.method == 'DQN':
         Trainer = Trainer_DQN
+    elif args.method == 'DoubleDQN':
+        Trainer = Trainer_DoubleDQN
     
     trainer = Trainer(cfgs)
     trainer.training()

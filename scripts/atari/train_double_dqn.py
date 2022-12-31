@@ -8,7 +8,7 @@ from utils.replay_buffer import *
 from utils.gym_wrappers import *
 from agents.discrete.dqn import Agent
 from easydict import EasyDict as edict
-from configs.atari.dqn import default_cfgs
+from configs.atari.double_dqn import default_cfgs
 
 
 class Trainer(object):
