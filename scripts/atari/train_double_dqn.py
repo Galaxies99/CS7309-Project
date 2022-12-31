@@ -4,8 +4,9 @@ import torch
 import random
 import numpy as np
 
-from utils.replay_buffer import *
 from utils.gym_wrappers import *
+from utils.replay_buffer import *
+from utils.configs import merge_cfgs
 from easydict import EasyDict as edict
 from agents.discrete.double_dqn import Agent
 from configs.atari.double_dqn import default_cfgs
@@ -14,8 +15,7 @@ from configs.atari.double_dqn import default_cfgs
 class Trainer(object):
     def __init__(self, cfgs: edict = {}):
         super(Trainer, self).__init__()
-        self.cfgs = edict(default_cfgs.copy())
-        self.cfgs.update(cfgs)
+        self.cfgs = merge_cfgs(default_cfgs, cfgs)
 
         np.random.seed(self.cfgs.seed)
         random.seed(self.cfgs.seed)

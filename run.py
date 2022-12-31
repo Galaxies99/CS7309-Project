@@ -1,6 +1,7 @@
 import yaml
 import argparse
 from easydict import EasyDict as edict
+from utils.configs import generate_paths_in_cfgs
 from scripts.atari.train_dqn import Trainer as Trainer_DQN
 from scripts.atari.train_double_dqn import Trainer as Trainer_DoubleDQN
 from scripts.atari.train_dueling_dqn import Trainer as Trainer_DuelingDQN
@@ -20,7 +21,7 @@ if __name__ == '__main__':
         cfgs = {}
     cfgs = edict(cfgs)
     cfgs.environment = args.env_name
-    print(cfgs.environment)
+    cfgs = generate_paths_in_cfgs(cfgs, args.env_name, args.method)
 
     if args.method == 'DQN':
         Trainer = Trainer_DQN

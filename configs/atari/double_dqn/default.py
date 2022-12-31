@@ -26,17 +26,12 @@ default_cfgs.training.start_step = 10000         # Number of steps before learni
 default_cfgs.training.target_upd_freq = 1000     # Number of iterations between every target network update
 
 default_cfgs.logs = edict()
+default_cfgs.logs.prefix = "logs/atari/"
 default_cfgs.logs.checkpoint = edict()
 default_cfgs.logs.checkpoint.load = False        # Whether to load checkpoint
-default_cfgs.logs.checkpoint.path = "logs/atari/PongNoFrameskip-v4/double_dqn/checkpoints"
-                                                 # Path to the checkpoint
 default_cfgs.logs.checkpoint.name = "checkpoint.pth"
                                                  # Checkpoint name
 default_cfgs.logs.video = edict()
-default_cfgs.logs.video.path = "logs/atari/PongNoFrameskip-v4/double_dqn/videos"
-                                                 # Path to the videos
 default_cfgs.logs.video.freq = 50                # Video frequency
 default_cfgs.logs.print = edict()
-default_cfgs.logs.print.path = "logs/atari/PongNoFrameskip-v4/double_dqn/records"
-                                                 # Path to the records
 default_cfgs.logs.print.freq = 10                # Print frequency

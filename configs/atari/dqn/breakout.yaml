@@ -1,0 +1,7 @@
+agent:
+  replay_buffer_size: 10000
+training:
+  eps_end: 0.07
+  num_steps: 7000000
+  train_opt_freq: 4
+  start_step: 10000
