@@ -1,3 +1,4 @@
+import os
 import gym
 import torch
 import random
@@ -22,6 +23,13 @@ class Trainer(object):
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+        if os.path.exists(self.cfgs.logs.checkpoint.path) == False:
+            os.makedirs(self.cfgs.logs.checkpoint.path)
+        if os.path.exists(self.cfgs.logs.video.path) == False:
+            os.makedirs(self.cfgs.logs.video.path)
+        if os.path.exists(self.cfgs.logs.print.path) == False:
+            os.makedirs(self.cfgs.logs.print.path)
+
         self.env = gym.make(self.cfgs.environment)
         self.env.seed(self.cfgs.seed)
 
@@ -35,8 +43,8 @@ class Trainer(object):
         self.env = FrameStack(self.env, 4)
         self.env = gym.wrappers.Monitor(
             self.env, 
-            './video/', 
-            video_callable = lambda episode_id: episode_id % 50 == 0,
+            self.cfgs.logs.video.path, 
+            video_callable = lambda episode_id: episode_id % self.cfgs.logs.video.freq == 0,
             force = True
         )
         self.replay_buffer = ReplayBuffer(self.cfgs.agent.replay_buffer_size)
@@ -51,9 +59,10 @@ class Trainer(object):
             device = self.device
         )
 
-        if self.cfgs.agent.checkpoint.load:
-            print("Loading a policy network from {}".format(self.cfgs.agent.checkpoint.path))
-            self.agent.policy_net.load_state_dict(torch.load(self.cfgs.agent.checkpoint.path, map_location = self.device))
+        if self.cfgs.logs.checkpoint.load:
+            filename = os.path.join(self.cfgs.logs.checkpoint.path, self.cfgs.logs.checkpoint.name)
+            print("Loading a policy network from {}".format(filename))
+            self.agent.policy_net.load_state_dict(torch.load(filename, map_location = self.device))
         
     def training(self):
         eps_timesteps = self.cfgs.training.eps_fraction * self.cfgs.training.num_steps
@@ -61,13 +70,13 @@ class Trainer(object):
         state = self.env.reset()
         for t in range(self.cfgs.training.num_steps):
             fraction = min(1.0, float(t) / eps_timesteps)
-            eps_threshold = self.cfgs.training.eps_begin + fraction * (self.cfgs.training.eps_end - self.cfgs.training.eps_start)
+            eps_threshold = self.cfgs.training.eps_begin + fraction * (self.cfgs.training.eps_end - self.cfgs.training.eps_begin)
             sample = random.random()
             if sample > eps_threshold:
                 action = self.agent.action(state)
             else:
                 action = self.env.action_space.sample()
-            next_state, reward, done, info = self.env.step(action)
+            next_state, reward, done, _ = self.env.step(action)
             self.agent.replay_buffer.add(state, action, reward, next_state, done)
             state = next_state
             rewards[-1] += reward
@@ -79,7 +88,7 @@ class Trainer(object):
             if t > self.cfgs.training.start_step and t % self.cfgs.training.target_upd_freq == 0:
                 self.agent.update_target_net()
             ep_num = len(rewards)
-            if done and ep_num % self.cfgs.print.freq == 0:
+            if done and ep_num % self.cfgs.logs.print.freq == 0:
                 mean_100ep_reward = round(np.mean(rewards[-101:-1]), 1)
                 print("********************************************************")
                 print("Steps: {}".format(t))
@@ -87,5 +96,6 @@ class Trainer(object):
                 print("Mean 100 episode reward: {}".format(mean_100ep_reward))
                 print("% time spent exploring: {}".format(int(100 * eps_threshold)))
                 print("********************************************************")
-                torch.save(self.agent.policy_network.state_dict(), self.cfgs.agent.checkpoint.path)
-                np.savetxt('rewards.csv', rewards, delimiter = ',', fmt = '%1.3f')
+                filename = os.path.join(self.cfgs.logs.checkpoint.path, self.cfgs.logs.checkpoint.name)
+                torch.save(self.agent.policy_net.state_dict(), filename)
+                np.savetxt(os.path.join(self.cfgs.logs.print.path, 'rewards.csv'), rewards, delimiter = ',', fmt = '%1.3f')

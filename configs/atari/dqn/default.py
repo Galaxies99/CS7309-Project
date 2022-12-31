@@ -10,12 +10,8 @@ default_cfgs.agent.gamma = 0.99                  # Discount factor
 default_cfgs.agent.batch_size = 32               # Batch number
 default_cfgs.agent.replay_buffer_size = 5000     # Size of replay buffer
 default_cfgs.agent.learning_rate = 1e-4          # Learning rate of the optimizer
-default_cfgs.agent.checkpoint = edict()
-default_cfgs.agent.checkpoint.load = False       # Whether to load checkpoint
-default_cfgs.agent.checkpoint.path = "logs/atari/dqn/checkpoints/checkpoint.pth"
-                                                # Path to the checkpoint
 default_cfgs.agent.optimizer = edict()
-default_cfgs.agent.optimizer.type = "RMSProp"    # Optimizer Type
+default_cfgs.agent.optimizer.type = "RMSprop"    # Optimizer Type
 default_cfgs.agent.optimizer.params = {}         # Optimizer Parameters
 
 default_cfgs.training = edict()
@@ -29,5 +25,18 @@ default_cfgs.training.train_opt_freq = 1         # Number of iterations between 
 default_cfgs.training.start_step = 10000         # Number of steps before learning starts
 default_cfgs.training.target_upd_freq = 1000     # Number of iterations between every target network update
 
-default_cfgs.print = edict()
-default_cfgs.print.freq = 10                     # Print frequency
+default_cfgs.logs = edict()
+default_cfgs.logs.checkpoint = edict()
+default_cfgs.logs.checkpoint.load = False        # Whether to load checkpoint
+default_cfgs.logs.checkpoint.path = "logs/atari/PongNoFrameskip-v4/dqn/checkpoints"
+                                                 # Path to the checkpoint
+default_cfgs.logs.checkpoint.name = "checkpoint.pth"
+                                                 # Checkpoint name
+default_cfgs.logs.video = edict()
+default_cfgs.logs.video.path = "logs/atari/PongNoFrameskip-v4/dqn/videos"
+                                                 # Path to the videos
+default_cfgs.logs.video.freq = 1                # Video frequency
+default_cfgs.logs.print = edict()
+default_cfgs.logs.print.path = "logs/atari/PongNoFrameskip-v4/dqn/records"
+                                                 # Path to the records
+default_cfgs.logs.print.freq = 10                # Print frequency
