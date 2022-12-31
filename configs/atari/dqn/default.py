@@ -35,7 +35,7 @@ default_cfgs.logs.checkpoint.name = "checkpoint.pth"
 default_cfgs.logs.video = edict()
 default_cfgs.logs.video.path = "logs/atari/PongNoFrameskip-v4/dqn/videos"
                                                  # Path to the videos
-default_cfgs.logs.video.freq = 1                # Video frequency
+default_cfgs.logs.video.freq = 50                # Video frequency
 default_cfgs.logs.print = edict()
 default_cfgs.logs.print.path = "logs/atari/PongNoFrameskip-v4/dqn/records"
                                                  # Path to the records
