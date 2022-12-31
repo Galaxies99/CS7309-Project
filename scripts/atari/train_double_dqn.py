@@ -6,8 +6,8 @@ import numpy as np
 
 from utils.replay_buffer import *
 from utils.gym_wrappers import *
-from agents.discrete.double_dqn import Agent
 from easydict import EasyDict as edict
+from agents.discrete.double_dqn import Agent
 from configs.atari.double_dqn import default_cfgs
 
 
