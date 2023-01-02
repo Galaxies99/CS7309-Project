@@ -81,7 +81,7 @@ class Agent(object):
             max_next_Q, _ = next_Q.max(1)
             target_Q = rewards + (1 - dones) * self.gamma * max_next_Q
         input_Q = self.policy_net(states).gather(1, actions.unsqueeze(1)).squeeze()
-        loss = F.l1_loss(input_Q, target_Q)
+        loss = F.mse_loss(input_Q, target_Q)
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()

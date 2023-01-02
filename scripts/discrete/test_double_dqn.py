@@ -9,8 +9,8 @@ from utils.gym_wrappers import *
 from utils.replay_buffer import *
 from utils.configs import merge_cfgs
 from easydict import EasyDict as edict
-from configs.atari.dqn import default_cfgs
 from agents.discrete.double_dqn import Agent
+from configs.discrete.dqn import default_cfgs
 
 
 class Tester(object):
@@ -72,7 +72,6 @@ class Tester(object):
                     else:
                         action = self.env.action_space.sample()
                     next_state, reward, done, _ = self.env.step(action)
-                    self.agent.replay_buffer.add(state, action, reward, next_state, done)
                     state = next_state
                     rewards[-1] += reward
                 pbar.set_description('Reward: {}'.format(rewards[-1]))

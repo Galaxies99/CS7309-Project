@@ -9,7 +9,7 @@ from utils.replay_buffer import *
 from utils.configs import merge_cfgs
 from easydict import EasyDict as edict
 from agents.discrete.dueling_dqn import Agent
-from configs.atari.dueling_dqn import default_cfgs
+from configs.discrete.dueling_dqn import default_cfgs
 
 
 class Trainer(object):

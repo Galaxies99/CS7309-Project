@@ -11,7 +11,7 @@ default_cfgs.agent.batch_size = 32               # Batch number
 default_cfgs.agent.replay_buffer_size = 5000     # Size of replay buffer
 default_cfgs.agent.learning_rate = 1e-4          # Learning rate of the optimizer
 default_cfgs.agent.optimizer = edict()
-default_cfgs.agent.optimizer.type = "RMSprop"    # Optimizer Type
+default_cfgs.agent.optimizer.type = "RMSprop"       # Optimizer Type
 default_cfgs.agent.optimizer.params = {}         # Optimizer Parameters
 
 default_cfgs.training = edict()

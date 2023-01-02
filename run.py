@@ -8,6 +8,8 @@ from scripts.discrete.test_double_dqn import Tester as Tester_DoubleDQN
 from scripts.discrete.train_double_dqn import Trainer as Trainer_DoubleDQN
 from scripts.discrete.test_dueling_dqn import Tester as Tester_DuelingDQN
 from scripts.discrete.train_dueling_dqn import Trainer as Trainer_DuelingDQN
+from scripts.continuous.train_ddpg import Trainer as Trainer_DDPG
+from scripts.continuous.train_td3 import Trainer as Trainer_TD3
 
 
 if __name__ == '__main__':
@@ -33,6 +35,10 @@ if __name__ == '__main__':
             Trainer = Trainer_DoubleDQN
         elif args.method == 'DuelingDQN':
             Trainer = Trainer_DuelingDQN
+        elif args.method == 'DDPG':
+            Trainer = Trainer_DDPG
+        elif args.method == 'TD3':
+            Trainer = Trainer_TD3
         
         trainer = Trainer(cfgs)
         trainer.training()

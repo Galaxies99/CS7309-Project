@@ -39,7 +39,24 @@ class Critic(nn.Module):
             nn.Linear(256, 1)
         )
 
+        self.layer1_ = nn.Sequential(
+            nn.Linear(state_dim, 256),
+            nn.ReLU(inplace = True)
+        )
+        self.layer2_ = nn.Sequential(
+            nn.Linear(256 + action_dim, 256),
+            nn.ReLU(inplace = True),
+            nn.Linear(256, 1)
+        )
+
     def forward(self, s, a):
+        x = self.layer1(s)
+        y = self.layer1_(s)
+        x = self.layer2(torch.cat([x, a], 1))
+        y = self.layer2_(torch.cat([y, a], 1))
+        return x, y
+    
+    def calc_loss(self, s, a):
         x = self.layer1(s)
         x = self.layer2(torch.cat([x, a], 1))
         return x
@@ -57,6 +74,8 @@ class Agent(object):
         gamma: float,
         tau: float,
         opt: edict,
+        noise: float,
+        noise_clip: float,
         device = torch.device("cpu"),
         **kwargs
     ):
@@ -69,6 +88,8 @@ class Agent(object):
         self.batch_size = batch_size
         self.gamma = gamma
         self.tau = tau
+        self.noise = noise
+        self.noise_clip = noise_clip
         self.device = device
 
         self.actor = Actor(state_dim, action_dim, max_action).to(device)
@@ -94,20 +115,24 @@ class Agent(object):
         state = torch.FloatTensor(state.reshape(1, -1)).to(self.device)
         return self.actor(state).cpu().data.numpy().flatten()
 
-    def optimize(self):
+    def optimize(self, delay = False):
         state, action, next_state, reward, done = self.replay_buffer.sample(self.batch_size)
         with torch.no_grad():
-            target_Q = self.critic_target(next_state, self.actor_target(next_state))
-            target_Q = reward + ((1 - done) * self.gamma * target_Q).detach()
-        current_Q = self.critic(state, action)
-        critic_loss = F.mse_loss(current_Q, target_Q)
+            noise = (torch.randn_like(action) * self.noise).clamp(-self.noise_clip, self.noise_clip)
+            next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
+            target_Q1, target_Q2 = self.critic_target(next_state, next_action)
+            target_Q = torch.min(target_Q1, target_Q2)
+            target_Q = reward + (1 - done) * self.gamma * target_Q
+        current_Q1, current_Q2 = self.critic(state, action)
+        critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
         self.critic_optimizer.step()
-        actor_loss = -self.critic(state, self.actor(state)).mean()
-        self.actor_optimizer.zero_grad()
-        actor_loss.backward()
-        self.actor_optimizer.step()
+        if not delay:
+            actor_loss = -self.critic.calc_loss(state, self.actor(state)).mean()
+            self.actor_optimizer.zero_grad()
+            actor_loss.backward()
+            self.actor_optimizer.step()
         for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
             target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
         for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
