@@ -8,14 +8,15 @@ default_cfgs.environment = "Hopper-v2"           # Environment
 default_cfgs.agent = edict()
 default_cfgs.agent.gamma = 0.99                  # Discount factor
 default_cfgs.agent.tau = 0.005                   # Soft update factor
-default_cfgs.agent.batch_size = 32               # Batch number
+default_cfgs.agent.batch_size = 64               # Batch number
 default_cfgs.agent.replay_buffer_size = 1000000  # Size of replay buffer
-default_cfgs.agent.learning_rate = 1e-4          # Learning rate of the optimizer
+default_cfgs.agent.learning_rate = 3e-4          # Learning rate of the optimizer
 default_cfgs.agent.optimizer = edict()
 default_cfgs.agent.optimizer.type = "AdamW"      # Optimizer Type
 default_cfgs.agent.optimizer.params = {}         # Optimizer Parameters
 default_cfgs.agent.noise = 0.2                   # Adding noise
 default_cfgs.agent.noise_clip = 0.5              # Noise clip
+default_cfgs.agent.policy_freq = 2               # Policy update frequency
 
 default_cfgs.training = edict()
 default_cfgs.training.eps_begin = 1              # E-greedy start threshold

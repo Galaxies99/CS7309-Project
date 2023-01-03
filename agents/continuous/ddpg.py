@@ -95,10 +95,16 @@ class Agent(object):
         return self.actor(state).cpu().data.numpy().flatten()
 
     def optimize(self):
-        state, action, next_state, reward, done = self.replay_buffer.sample(self.batch_size)
+        state, action, reward, next_state, done = self.replay_buffer.sample(self.batch_size)
+        state = torch.from_numpy(state).float().to(self.device)
+        action = torch.from_numpy(action).float().to(self.device)
+        next_state = torch.from_numpy(next_state).float().to(self.device)
+        reward = torch.from_numpy(reward).float().to(self.device)
+        done = torch.from_numpy(done).float().to(self.device)
         with torch.no_grad():
-            target_Q = self.critic_target(next_state, self.actor_target(next_state))
-            target_Q = reward + ((1 - done) * self.gamma * target_Q).detach()
+            target_Q = self.critic_target(next_state, self.actor_target(next_state)).reshape(-1)
+            target_Q = reward + (1 - done) * self.gamma * target_Q
+            target_Q = target_Q.reshape(-1, 1)
         current_Q = self.critic(state, action)
         critic_loss = F.mse_loss(current_Q, target_Q)
         self.critic_optimizer.zero_grad()
@@ -112,3 +118,15 @@ class Agent(object):
             target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
         for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
             target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+
+    def get_state_dict(self):
+        return {
+            'actor': self.actor.state_dict(),
+            'critic': self.critic.state_dict()
+        }
+    
+    def load_state_dict(self, state_dict):
+        self.actor.load_state_dict(state_dict['actor'])
+        self.critic.load_state_dict(state_dict['critic'])
+        self.actor_target.load_state_dict(self.actor.state_dict())
+        self.critic_target.load_state_dict(self.critic.state_dict())

@@ -76,6 +76,7 @@ class Agent(object):
         opt: edict,
         noise: float,
         noise_clip: float,
+        policy_freq: int,
         device = torch.device("cpu"),
         **kwargs
     ):
@@ -90,6 +91,7 @@ class Agent(object):
         self.tau = tau
         self.noise = noise
         self.noise_clip = noise_clip
+        self.policy_freq = policy_freq
         self.device = device
 
         self.actor = Actor(state_dim, action_dim, max_action).to(device)
@@ -111,29 +113,52 @@ class Agent(object):
             **opt.params
         )
 
+        self.timestep = 0
+
     def action(self, state):
         state = torch.FloatTensor(state.reshape(1, -1)).to(self.device)
         return self.actor(state).cpu().data.numpy().flatten()
 
-    def optimize(self, delay = False):
-        state, action, next_state, reward, done = self.replay_buffer.sample(self.batch_size)
+    def optimize(self):
+        self.timestep += 1
+        state, action, reward, next_state, done = self.replay_buffer.sample(self.batch_size)
+        state = torch.from_numpy(state).float().to(self.device)
+        action = torch.from_numpy(action).float().to(self.device)
+        next_state = torch.from_numpy(next_state).float().to(self.device)
+        reward = torch.from_numpy(reward).float().to(self.device)
+        done = torch.from_numpy(done).float().to(self.device)
         with torch.no_grad():
             noise = (torch.randn_like(action) * self.noise).clamp(-self.noise_clip, self.noise_clip)
             next_action = (self.actor_target(next_state) + noise).clamp(-self.max_action, self.max_action)
             target_Q1, target_Q2 = self.critic_target(next_state, next_action)
+            target_Q1 = target_Q1.reshape(-1)
+            target_Q2 = target_Q2.reshape(-1)
             target_Q = torch.min(target_Q1, target_Q2)
             target_Q = reward + (1 - done) * self.gamma * target_Q
+            target_Q = target_Q.reshape(-1, 1)
         current_Q1, current_Q2 = self.critic(state, action)
         critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
         self.critic_optimizer.step()
-        if not delay:
+        if self.timestep % self.policy_freq == 0:
             actor_loss = -self.critic.calc_loss(state, self.actor(state)).mean()
             self.actor_optimizer.zero_grad()
             actor_loss.backward()
             self.actor_optimizer.step()
-        for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
-            target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
-        for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
-            target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+            for param, target_param in zip(self.critic.parameters(), self.critic_target.parameters()):
+                target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+            for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
+                target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
+
+    def get_state_dict(self):
+        return {
+            'actor': self.actor.state_dict(),
+            'critic': self.critic.state_dict()
+        }
+    
+    def load_state_dict(self, state_dict):
+        self.actor.load_state_dict(state_dict['actor'])
+        self.critic.load_state_dict(state_dict['critic'])
+        self.actor_target.load_state_dict(self.actor.state_dict())
+        self.critic_target.load_state_dict(self.critic.state_dict())

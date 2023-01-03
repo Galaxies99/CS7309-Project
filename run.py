@@ -1,5 +1,6 @@
 import yaml
 import argparse
+import numpy as np
 from easydict import EasyDict as edict
 from utils.configs import generate_paths_in_cfgs
 from scripts.discrete.test_dqn import Tester as Tester_DQN
@@ -8,7 +9,9 @@ from scripts.discrete.test_double_dqn import Tester as Tester_DoubleDQN
 from scripts.discrete.train_double_dqn import Trainer as Trainer_DoubleDQN
 from scripts.discrete.test_dueling_dqn import Tester as Tester_DuelingDQN
 from scripts.discrete.train_dueling_dqn import Trainer as Trainer_DuelingDQN
+from scripts.continuous.test_ddpg import Tester as Tester_DDPG
 from scripts.continuous.train_ddpg import Trainer as Trainer_DDPG
+from scripts.continuous.test_td3 import Tester as Tester_TD3
 from scripts.continuous.train_td3 import Trainer as Trainer_TD3
 
 
@@ -50,6 +53,10 @@ if __name__ == '__main__':
             Tester = Tester_DoubleDQN
         elif args.method == 'DuelingDQN':
             Tester = Tester_DuelingDQN
+        elif args.method == 'DDPG':
+            Tester = Tester_DDPG
+        elif args.method == 'TD3':
+            Tester = Tester_TD3
         tester = Tester(cfgs)
         res = tester.testing(args.test)
-        print('Mean: {}, Min: {}, Max: {}'.format(res.mean(), res.min(), res.max()))
+        print('Mean: {}, Min: {}, Max: {}, Median: {}, Std: {}'.format(res.mean(), res.min(), res.max(), np.median(res), res.std()))

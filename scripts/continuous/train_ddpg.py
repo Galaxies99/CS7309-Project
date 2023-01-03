@@ -39,8 +39,6 @@ class Trainer(object):
             self.state_dim,
             self.action_dim,
             self.max_action,
-            self.env.observation_space,
-            self.env.action_space,
             self.replay_buffer,
             learning_rate = self.cfgs.agent.learning_rate,
             batch_size = self.cfgs.agent.batch_size,
@@ -53,7 +51,7 @@ class Trainer(object):
         if self.cfgs.logs.checkpoint.load:
             filename = os.path.join(self.cfgs.logs.checkpoint.path, self.cfgs.logs.checkpoint.name)
             print("Loading a policy network from {}".format(filename))
-            self.agent.policy_net.load_state_dict(torch.load(filename, map_location = self.device))
+            self.agent.load_state_dict(torch.load(filename, map_location = self.device))
         
     def training(self):
         rewards = [0.0]
@@ -76,5 +74,5 @@ class Trainer(object):
                 print("==> Steps: {}, Episodes: {}".format(t, ep_num))
                 print("Mean 100 episode reward: {}".format(mean_reward))
                 filename = os.path.join(self.cfgs.logs.checkpoint.path, self.cfgs.logs.checkpoint.name)
-                torch.save(self.agent.policy_net.state_dict(), filename)
+                torch.save(self.agent.get_state_dict(), filename)
                 np.savetxt(os.path.join(self.cfgs.logs.print.path, 'rewards.csv'), rewards, delimiter = ',', fmt = '%1.3f')

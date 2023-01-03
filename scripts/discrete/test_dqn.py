@@ -18,8 +18,8 @@ class Tester(object):
         super(Tester, self).__init__()
         self.cfgs = merge_cfgs(default_cfgs, cfgs)
 
-        np.random.seed(self.cfgs.seed)
-        random.seed(self.cfgs.seed)
+        np.random.seed(self.cfgs.seed + np.random.randint(100))
+        random.seed(self.cfgs.seed + np.random.randint(100))
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -58,7 +58,7 @@ class Tester(object):
         print("Loading a policy network from {}".format(filename))
         self.agent.policy_net.load_state_dict(torch.load(filename, map_location = self.device))
         
-    def testing(self, episode_num = 20):
+    def testing(self, episode_num = 100):
         rewards = []
         with tqdm(range(episode_num)) as pbar:
             for _ in pbar:
@@ -66,11 +66,7 @@ class Tester(object):
                 rewards.append(0.0)
                 done = False
                 while not done:
-                    sample = random.random()
-                    if sample > self.cfgs.training.eps_end:
-                        action = self.agent.action(state)
-                    else:
-                        action = self.env.action_space.sample()
+                    action = self.agent.action(state)
                     next_state, reward, done, _ = self.env.step(action)
                     state = next_state
                     rewards[-1] += reward
