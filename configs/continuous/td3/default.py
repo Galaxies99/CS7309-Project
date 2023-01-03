@@ -25,7 +25,7 @@ default_cfgs.training.eps_fraction = 0.1         # E-greedy fraction of step num
 
 default_cfgs.training.num_steps = 1000000        # Total number of steps
 
-default_cfgs.training.expl_noise = 0.1
+default_cfgs.training.expl_noise = 0.1           # Noise Scale
 
 default_cfgs.training.train_opt_freq = 1         # Number of iterations between each optimization step
 default_cfgs.training.start_step = 10000         # Number of steps before learning starts
@@ -34,7 +34,7 @@ default_cfgs.training.target_upd_freq = 1000     # Number of iterations between 
 default_cfgs.logs = edict()
 default_cfgs.logs.prefix = "logs/mujoco/"
 default_cfgs.logs.checkpoint = edict()
-default_cfgs.logs.checkpoint.load = False        # Whether to load checkpoint
+default_cfgs.logs.checkpoint.load = True        # Whether to load checkpoint
 default_cfgs.logs.checkpoint.name = "checkpoint.pth"
                                                  # Checkpoint name
 default_cfgs.logs.video = edict()
